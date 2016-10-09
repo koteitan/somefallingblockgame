@@ -15,17 +15,19 @@ Game::Game(Arduboy *_pA, bool *_kp){
   geTimeMax =  0; 
   geSeqStep =  1; 
   pGE = new GraphicEffect(pA);
+  reset();
 }
 //--------------------------------------
 void Game::reset(void){
   state = eGAME_STT_PLAY;
-  geState = eGE_STT_PLAYING;  
+  geState = eGE_STT_IDLE;  
   geTimeNow = 0;
   geSeqNow  = 0;
   geDamageTimeNow=0;
   pA->clear();
-}
-void Game::drawScore(void){
+  char *p=&map[0];
+  for(int y=0;y<WY/2;y++) *p++=0x00;
+  for(int y=0;y<WY/2;y++) *p++=0xFF;
 }
 //--------------------------------------
 void Game::drawTitle(void){
@@ -52,7 +54,7 @@ void Game::loop(void){
     case eGAME_STT_TITLE_IN:
       pA->clear();
       drawTitle();
-//      pGE->lightning(geSeqMax-geSeqNow-1);
+      pGE->lightning(geSeqMax-geSeqNow-1);
       if(incGE()) state=eGAME_STT_TITLE;
     return;
     //----------------------------------
@@ -69,7 +71,7 @@ void Game::loop(void){
     //----------------------------------
     case eGAME_STT_TITLE_OUT:
       drawTitle();
-//      pGE->lightning(geSeqNow);
+      pGE->lightning(geSeqNow);
       if(incGE()){
         state  =eGAME_STT_PLAY;
         geState=eGE_STT_PLAYING;
@@ -118,7 +120,33 @@ void Game::loop(void){
 }
 void Game::drawAll(){
   pA->clear();
-  pA->display();
+  if(state==eGAME_STT_PLAY){
+    int bx0=16;
+    int by0= 4;
+    //map ---------------
+    //  horizontal line
+    for(int y=0;y<WY-1;y++){
+      int b=map[y]^map[y+1];
+      for(int x=0;x<WX;x++){
+        if((b>>x)&0x01){
+          pA->drawLine(bx0+CX*x,by0+CY*y+CY,bx0+CX*x+CX,by0+CY*y+CY,1);
+        }
+      }
+    }
+    //  horizontal line
+    for(int y=0;y<WY;y++){
+      int b=map[y];
+      for(int x=0;x<WX-1;x++){
+        if(((b>>x)^(b>>(x+1)))&0x01){
+          pA->drawLine(bx0+CX*x+CX,by0+CY*y,bx0+CX*x+CX,by0+CY*y+CY,1);
+        }
+      }
+    }
+    //border ---------------
+    pA->drawRect(bx0,by0,CX*WX+1,CY*WY+1,1);
+    //display ---------------
+    pA->display();
+  }
 }
 //--------------------------------------
 void Game::drawDebug(void){

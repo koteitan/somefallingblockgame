@@ -1,6 +1,20 @@
 #pragma once
 #include <Arduboy.h>
 #include "graphiceffect.h"
+#include "common.h"
+#define DIMS (  2) // number of dimension
+#define WX   (  8) // blocks per a world
+#define WY   ( 14) // blocks per a world
+#define CX   (  4) // pixel per a block
+#define CY   (  4) // pixel per a block
+#define SX   (128) // pixel per a screen
+#define SY   ( 64) // pixel per a screen
+
+// scale change
+#define WY2SY ((float)SY/WY)
+#define WX2SX ((float)SX/WX)
+#define SY2WY ((float)WY/SY)
+#define SX2WX ((float)WX/SX)
 
 typedef enum{
   eGAME_STT_TITLE_IN  = 0,
@@ -17,6 +31,7 @@ typedef enum{
 }eGE_STT;
 class Game{
   public:
+  char map[WY];
   Arduboy *pA;
   bool *keypressed;
   eGAME_STT state;
@@ -33,7 +48,6 @@ class Game{
   int geDamageTimeMax = 4;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
-  void drawScore(void);
   void drawAll  (void);
   void loop     (void);
   void drawDebug(void);

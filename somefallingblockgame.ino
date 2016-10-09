@@ -1,6 +1,7 @@
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
+
 // library version is below:
 // git co https://github.com/Arduboy/Arduboy 3c409fefb
 
@@ -17,6 +18,7 @@ void setup(){
   pA->initRandomSeed();
   pGame = new Game(pA, keypressed);
   pA->setFrameRate(frame_rate);
+  Serial.begin(9600);
 }
 
 long msnow=0;
