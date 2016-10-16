@@ -119,9 +119,15 @@ void Game::loop(void){
   }
 
   // key -> move
-  int8_t ma=0;
-  int8_t mx=0;
-  int8_t my=0;
+  int8_t ma[PLAYERS];
+  int8_t mx[PLAYERS];
+  int8_t my[PLAYERS];
+  ma[0]=0;
+  mx[0]=0;
+  my[0]=0;
+  ma[1]=0;
+  mx[1]=0;
+  my[1]=0;
   if(keypressed[KEY_XM]){
     if(keypressedOld[KEY_XM]){
       //repeated
@@ -130,11 +136,11 @@ void Game::loop(void){
         moveFrames--;
       }else{
         // expired
-        mx=-1;
+        mx[0]=-1;
       }
     }else{
       //no repeat -> move
-      mx=-1;
+      mx[0]=-1;
       moveFrames=moveFramesTh; // reset repeat
     }
   }
@@ -146,34 +152,62 @@ void Game::loop(void){
         moveFrames--;
       }else{
         // expired
-        mx=+1;
+        mx[0]=+1;
       }
     }else{
       //no repeat -> move
-      mx=+1;
+      mx[0]=+1;
       moveFrames=moveFramesTh; // reset repeat
     }
   }
 
   if(!keypressedOld[KEY_YM] && keypressed[KEY_YM]){
-    my=-1;
+    my[0]=-1;
   }
   if(!keypressedOld[KEY_YP] && keypressed[KEY_YP]){
-    my=+1;
+    my[0]=+1;
   }
   if(!keypressedOld[KEY_A] && keypressed[KEY_A]){
-    ma=-1;
+    ma[0]=-1;
   }
   if(!keypressedOld[KEY_B] && keypressed[KEY_B]){
-    ma=+1;
+    ma[0]=+1;
   }
+  mx[1]=mx[0];
+  my[1]=my[0];
+  ma[1]=ma[0];
+
   //move -> potision
-  pa[0]=(pa[0]+ma)%ATTS;
-  px[0]+=mx;
-  py[0]+=my;
-  pa[1]=(pa[1]+ma)%ATTS;
-  px[1]+=mx;
-  py[1]+=my;
+  for(int p=0;p<1;p++){
+    if(mx[p]!=0){
+      for(int8_t by=0;by<BY;by++){
+        int8_t y = by+py[p]+my[p];
+        for(int8_t bx=0;bx<BX;bx++){
+          if(block[b][pa[p]][by][bx]){
+            int8_t x = bx+px[p]+mx[p];
+            if(x<0 || x>=WX){
+              // x is out of border
+              Serial.print("x=");
+              Serial.println(x);
+              mx[p]=0;
+            }else{
+              if(y>=0 && y<WY && map[y][x]){
+                // y is inside of border and block has collision
+                Serial.print("y=");
+                Serial.println(y);
+                Serial.print("map[y][x]=");
+                Serial.println((int)map[y][x]);
+                mx[p]=0;
+              }
+            }//if(x<0 || x>=WX)
+          }//if block
+        }// for bx
+      }// for by
+      px[p]+=mx[p];
+    }
+    pa[p]=(pa[p]+ma[p]+ATTS)%ATTS;
+    py[p]+=my[p];
+  }
   // score
 
   // draw 
@@ -261,14 +295,14 @@ void Game::drawAll(){
               wx0+CX*x+CX*d,
               wy0+CY*y+ 0,1);
           }
-        }
-      }
-    }
+        }// for bx
+      }// for by
+    }//for p
     //border ---------------
     pA->drawRect(wx0,wy0,CX*WX+1,CY*WY+1,1);
     //display ---------------
     pA->display();
-  }
+  }//  if(state==eGAME_STT_PLAY)
 }
 //--------------------------------------
 void Game::drawDebug(void){
