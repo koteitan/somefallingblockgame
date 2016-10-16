@@ -8,6 +8,7 @@
 int curkeys = 0;
 int button[KEYS]={ LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, A_BUTTON, B_BUTTON};
 bool keypressed[KEYS];
+bool keypressedOld[KEYS];
 Arduboy *pA = new Arduboy();
 
 int frame_rate  = 60;  // frames/sec
