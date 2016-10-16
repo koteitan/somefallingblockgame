@@ -2,6 +2,8 @@
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
+
+
 //--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
   state = eGAME_STT_PLAY;
@@ -25,9 +27,21 @@ void Game::reset(void){
   geSeqNow  = 0;
   geDamageTimeNow=0;
   pA->clear();
-  char *p=&map[0];
-  for(int y=0;y<WY/2;y++) *p++=0x00;
-  for(int y=0;y<WY/2;y++) *p++=0xFF;
+  for(int y=0;y<WY/2;y++){
+    for(int x=0;x<WX;x++) map[y][x]=0;
+  }
+  for(int y=WY/2;y<WY;y++){
+    for(int x=0;x<WX;x++) map[y][x]=1;
+  }
+  pb[0]=0;//(int8_t)random(0,BLOCKS);
+  px[0]=initpos[pb[0]][0];
+  py[0]=initpos[pb[0]][1];
+  pa[0]=0;//initpos[pb[0]][2];
+  pb[1]=0;//(int8_t)random(0,BLOCKS);
+  px[1]=initpos[pb[1]][0];
+  py[1]=initpos[pb[1]][1];
+  pa[1]=0;//initpos[pb[1]][2];
+  nextblock=(int8_t)random(0,BLOCKS);
 }
 //--------------------------------------
 void Game::drawTitle(void){
@@ -103,7 +117,24 @@ void Game::loop(void){
   }
 
   // move 
-
+  if(keypressed[KEY_XM]){
+    px[0]--;
+  }
+  if(keypressed[KEY_XP]){
+    px[0]++;
+  }
+  if(keypressed[KEY_YM]){
+    py[0]--;
+  }
+  if(keypressed[KEY_YP]){
+    py[0]++;
+  }
+  if(keypressed[KEY_A]){
+    pa[0]++;
+  }
+  if(keypressed[KEY_B]){
+    pa[0]--;
+  }
   // score
 
   // draw 
@@ -121,29 +152,75 @@ void Game::loop(void){
 void Game::drawAll(){
   pA->clear();
   if(state==eGAME_STT_PLAY){
-    int bx0=16;
-    int by0= 4;
+    int wx0=24;
+    int wy0= 4;
     //map ---------------
     //  horizontal line
     for(int y=0;y<WY-1;y++){
-      int b=map[y]^map[y+1];
       for(int x=0;x<WX;x++){
-        if((b>>x)&0x01){
-          pA->drawLine(bx0+CX*x,by0+CY*y+CY,bx0+CX*x+CX,by0+CY*y+CY,1);
+        if(map[y][x]^map[y+1][x]){
+          pA->drawLine(wx0+CX*x,wy0+CY*y+CY,wx0+CX*x+CX,wy0+CY*y+CY,1);
         }
       }
     }
-    //  horizontal line
+    //  vertical line
     for(int y=0;y<WY;y++){
-      int b=map[y];
       for(int x=0;x<WX-1;x++){
-        if(((b>>x)^(b>>(x+1)))&0x01){
-          pA->drawLine(bx0+CX*x+CX,by0+CY*y,bx0+CX*x+CX,by0+CY*y+CY,1);
+        if(map[y][x]^map[y][x+1]){
+          pA->drawLine(wx0+CX*x+CX,wy0+CY*y,wx0+CX*x+CX,wy0+CY*y+CY,1);
+        }
+      }
+    }
+    //block-------------
+    for(int p=0;p<1;p++){
+      int8_t b=pb[p];
+      int8_t x=px[p];
+      int8_t y=py[p];
+      int8_t a=pa[p];
+      Serial.println("--------------");
+      for(int by=0;by<=BY;by++){
+        for(int bx=0;bx<=BX;bx++){
+          char h  = (bx==BX||by==BY)?0:block[b][a][by  ][bx  ];
+          char hx = (bx== 0||by==BY)?0:block[b][a][by  ][bx-1];
+          char hy = (bx==BX||by== 0)?0:block[b][a][by-1][bx  ];
+          //debug
+          if(h) pA->drawPixel(wx0+CX*(x+bx)+CX/2,wy0+CY*(y+by)+CY/2,1);
+          Serial.print("(");
+          Serial.print(bx);
+          Serial.print(",");
+          Serial.print(by);
+          Serial.print(")->(");
+          Serial.print((int)(h));
+          Serial.print(",");
+          Serial.print((int)(hx));
+          Serial.print(")->(");
+          Serial.print((int)(hy));
+          Serial.print(",");
+          Serial.print((int)(h^hx));
+          Serial.print(",");
+          Serial.print((int)(h^hy));
+          Serial.println(")");
+          //vertical line
+          if(h^hx && x+bx>0 && x+bx<WX && y+by>=0 && y+by<WY){
+            pA->drawLine(
+              wx0+CX*(x+bx)+ 0,
+              wy0+CY*(y+by)+ 0,
+              wx0+CX*(x+bx)+ 0,
+              wy0+CY*(y+by)+CY,1);
+          }
+          //horizontal line
+          if(h^hy && y+by>0 && y+by<WY && x+bx>=0 && x+bx<WX){
+            pA->drawLine(
+              wx0+CX*(x+bx)+ 0,
+              wy0+CY*(y+by)+ 0,
+              wx0+CX*(x+bx)+CX,
+              wy0+CY*(y+by)+ 0,1);
+          }
         }
       }
     }
     //border ---------------
-    pA->drawRect(bx0,by0,CX*WX+1,CY*WY+1,1);
+    pA->drawRect(wx0,wy0,CX*WX+1,CY*WY+1,1);
     //display ---------------
     pA->display();
   }
