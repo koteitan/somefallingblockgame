@@ -33,14 +33,14 @@ void Game::reset(void){
   for(int y=WY/2;y<WY;y++){
     for(int x=0;x<WX;x++) map[y][x]=1;
   }
-  pb[0]=0;//(int8_t)random(0,BLOCKS);
+  pb[0]=(int8_t)random(0,BLOCKS);
   px[0]=initpos[pb[0]][0];
   py[0]=initpos[pb[0]][1];
-  pa[0]=0;//initpos[pb[0]][2];
-  pb[1]=0;//(int8_t)random(0,BLOCKS);
+  pa[0]=initpos[pb[0]][2];
+  pb[1]=(int8_t)random(0,BLOCKS);
   px[1]=initpos[pb[1]][0];
   py[1]=initpos[pb[1]][1];
-  pa[1]=0;//initpos[pb[1]][2];
+  pa[1]=initpos[pb[1]][2];
   nextblock=(int8_t)random(0,BLOCKS);
   moveFrames = moveFramesTh;
   fixFrames  = fixFramesTh;
@@ -178,29 +178,18 @@ void Game::loop(void){
   ma[1]=ma[0];
 
   //move -> potision
-  for(int p=0;p<1;p++){
+  for(int p=0;p<PLAYERS;p++){
     if(mx[p]!=0){
       for(int8_t by=0;by<BY;by++){
-        int8_t y = by+py[p]+my[p];
+        int8_t y = by+py[p];
         for(int8_t bx=0;bx<BX;bx++){
-          if(block[b][pa[p]][by][bx]){
-            int8_t x = bx+px[p]+mx[p];
-            if(x<0 || x>=WX){
-              // x is out of border
-              Serial.print("x=");
-              Serial.println(x);
+          int8_t x0 = bx+px[p];
+          int8_t x1 = x0+mx[p];
+          if(y>=0 && y<WY && x0>=0 && x0<WX && block[pb[p]][pa[p]][by][bx]){
+            if(x1<0 || x1>=WX || map[y][x1]){
               mx[p]=0;
-            }else{
-              if(y>=0 && y<WY && map[y][x]){
-                // y is inside of border and block has collision
-                Serial.print("y=");
-                Serial.println(y);
-                Serial.print("map[y][x]=");
-                Serial.println((int)map[y][x]);
-                mx[p]=0;
-              }
-            }//if(x<0 || x>=WX)
-          }//if block
+            }//if (x1,y) !map
+          }//if (x0,y) block
         }// for bx
       }// for by
       px[p]+=mx[p];
