@@ -42,8 +42,9 @@ void Game::reset(void){
   py[1]=initpos[pb[1]][1];
   pa[1]=initpos[pb[1]][2];
   nextblock=(int8_t)random(0,BLOCKS);
-  moveFrames = moveFramesTh;
-  fixFrames  = fixFramesTh;
+  moveFrames   = moveFramesTh;
+  fixFrames[0] = fixFramesTh;
+  fixFrames[1] = fixFramesTh;
 }
 //--------------------------------------
 void Game::drawTitle(void){
@@ -177,17 +178,18 @@ void Game::loop(void){
   my[1]=my[0];
   ma[1]=ma[0];
 
-  //move -> potision
-  for(int p=0;p<PLAYERS;p++){
+  //move x -> potision
+  for(int8_t p=0;p<PLAYERS;p++){
+    int8_t pm=p*-2+1;
     if(mx[p]!=0){
       for(int8_t by=0;by<BY;by++){
-        int8_t y = by+py[p];
+        int8_t y = (WY-1)*p + pm*(by+py[p]);
         for(int8_t bx=0;bx<BX;bx++){
-          int8_t x0 = bx+px[p];
-          int8_t x1 = x0+mx[p];
+          int8_t x0 = (WX-1)*p + pm*(bx+px[p]);
+          int8_t x1 = x0 + pm*mx[p];
           if(y>=0 && y<WY && x0>=0 && x0<WX && block[pb[p]][pa[p]][by][bx]){
-            if(x1<0 || x1>=WX || map[y][x1]){
-              mx[p]=0;
+            if(x1<0 || x1>=WX || map[y][x1]!=p){
+              mx[p]=0; //cancel
             }//if (x1,y) !map
           }//if (x0,y) block
         }// for bx
@@ -195,8 +197,56 @@ void Game::loop(void){
       px[p]+=mx[p];
     }
     pa[p]=(pa[p]+ma[p]+ATTS)%ATTS;
+  }
+  // score
+
+  //move y -> potision
+  bool isfix[2]={false, false};
+  for(int8_t p=0;p<PLAYERS;p++){
+    int8_t pm=p*-2+1;
+    if(my[p]!=0){
+      for(int8_t by=0;by<BY;by++){
+        int8_t y0 = (WY-1)*p + pm*(by+py[p]);
+        int8_t y1 = y0       + pm*    my[p];
+        for(int8_t bx=0;bx<BX;bx++){
+          int8_t x = (WX-1)*p + pm*(bx+px[p]);
+          if(y0>=0 && y0<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
+            if(y1>=WX || map[y1][x]!=p){
+              //fix
+              isfix[p]=true;
+              my[p]=0; //cancel
+            }//if (x,y1) !map
+          }//if (x,y0) block
+        }// for bx
+      }// for by
+    }
     py[p]+=my[p];
   }
+
+  //fix
+  for(int8_t p=0;p<PLAYERS;p++){
+    if(isfix[p]){
+      //copy block -> map
+      int8_t pm=p*-2+1;
+      for(int8_t by=0;by<BY;by++){
+        int8_t y = (WY-1)*p + pm*(by+py[p]);
+        for(int8_t bx=0;bx<BX;bx++){
+          int8_t x = (WX-1)*p + pm*(bx+px[p]);
+          if(y>=0 && y<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
+            map[y][x]=(~p)&0x01;
+          }
+        }//bx
+      }//by
+      //reset next
+      pb[p]=nextblock;
+      px[p]=initpos[pb[p]][0];
+      py[p]=initpos[pb[p]][1];
+      pa[p]=initpos[pb[p]][2];
+      nextblock=(int8_t)random(0,BLOCKS);
+      moveFrames   = moveFramesTh;
+      fixFrames[p] = fixFramesTh;
+    }//isfix
+  }//p
   // score
 
   // draw 

@@ -69,10 +69,10 @@ class Game{
   int8_t  py[PLAYERS]; // player y
   int8_t  pa[PLAYERS]; // player attitude
   uint8_t nextblock;   // next
-  int8_t fixFrames    =  0; // number of frames with key down
-  int8_t fixFramesTh  = 30; // number of frames until fix with key down
-  int8_t moveFrames   =  0; // number of frames with key L R
-  int8_t moveFramesTh = 15; // number of frames until repeat with key L R
+  int8_t fixFrames[2] = {0,0}; // number of frames with key down
+  int8_t fixFramesTh  =    30; // number of frames until fix with key down
+  int8_t moveFrames   =     0; // number of frames with key L R
+  int8_t moveFramesTh =    15; // number of frames until repeat with key L R
   
   void reset    (void);
   void drawAll  (void);
