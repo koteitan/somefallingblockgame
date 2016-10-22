@@ -71,9 +71,10 @@ class Game{
   uint8_t nextblock;   // next
   int8_t fixFrames[2] = {0,0}; // number of frames with key down
   int8_t fixFramesTh  =    30; // number of frames until fix with key down
-  int8_t moveFrames   =     0; // number of frames with key L R
-  int8_t moveFramesTh =    15; // number of frames until repeat with key L R
-  
+  int8_t xkeyRepeatFrames[2] = {0,0}; // number of frames with key L R
+  int8_t xkeyRepeatFramesTh  =     5; // number of frames until repeat with key L R
+  int8_t moveWaitFrames[2]   = {0,0}; // number of frames of wait for go down with key
+  int8_t moveWaitFramesTh    =     5; // number of frames of wait for go down with key
   void reset    (void);
   void drawAll  (void);
   void loop     (void);

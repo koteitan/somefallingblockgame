@@ -42,9 +42,11 @@ void Game::reset(void){
   py[1]=initpos[pb[1]][1];
   pa[1]=initpos[pb[1]][2];
   nextblock=(int8_t)random(0,BLOCKS);
-  moveFrames   = moveFramesTh;
+  xkeyRepeatFrames[0] = xkeyRepeatFramesTh;
   fixFrames[0] = fixFramesTh;
   fixFrames[1] = fixFramesTh;
+  moveWaitFrames[0]=moveWaitFramesTh;
+  moveWaitFrames[1]=moveWaitFramesTh;
 }
 //--------------------------------------
 void Game::drawTitle(void){
@@ -132,41 +134,61 @@ void Game::loop(void){
   if(keypressed[KEY_XM]){
     if(keypressedOld[KEY_XM]){
       //repeated
-      if(moveFrames){
+      if(xkeyRepeatFrames[0]){
         // not expired -> declement
-        moveFrames--;
+        xkeyRepeatFrames[0]--;
       }else{
         // expired
-        mx[0]=-1;
+        if(moveWaitFrames[0]==0){
+          mx[0]=-1;
+          moveWaitFrames[0]=moveWaitFramesTh;
+        }else{
+          moveWaitFrames[0]--;
+        }
       }
     }else{
       //no repeat -> move
       mx[0]=-1;
-      moveFrames=moveFramesTh; // reset repeat
+      xkeyRepeatFrames[0]=xkeyRepeatFramesTh; // reset repeat
     }
   }
   if(keypressed[KEY_XP]){
     if(keypressedOld[KEY_XP]){
       //repeated
-      if(moveFrames){
+      if(xkeyRepeatFrames[0]){
         // not expired -> declement
-        moveFrames--;
+        xkeyRepeatFrames[0]--;
       }else{
         // expired
-        mx[0]=+1;
+        if(moveWaitFrames[0]==0){
+          mx[0]=+1;
+          moveWaitFrames[0]=moveWaitFramesTh;
+        }else{
+          moveWaitFrames[0]--;
+        }
       }
     }else{
       //no repeat -> move
       mx[0]=+1;
-      moveFrames=moveFramesTh; // reset repeat
+      xkeyRepeatFrames[0]=xkeyRepeatFramesTh; // reset repeat
     }
   }
 
-  if(!keypressedOld[KEY_YM] && keypressed[KEY_YM]){
-    my[0]=-1;
+  if(keypressed[KEY_YM]){
+    if(!keypressedOld[KEY_YM] || moveWaitFrames[0]==0){
+      my[0]=-1;
+      moveWaitFrames[0]=moveWaitFramesTh;
+    }else{
+      moveWaitFrames[0]--;
+    }
   }
-  if(!keypressedOld[KEY_YP] && keypressed[KEY_YP]){
-    my[0]=+1;
+  if(keypressed[KEY_YP]){
+    if(!keypressedOld[KEY_YP] || moveWaitFrames[0]==0){
+      my[0]=+1;
+      moveWaitFrames[0]=moveWaitFramesTh;
+    }else{
+      moveWaitFrames[0]--;
+    }
   }
   if(!keypressedOld[KEY_A] && keypressed[KEY_A]){
     ma[0]=-1;
@@ -245,7 +267,8 @@ void Game::loop(void){
       py[p]=initpos[pb[p]][1];
       pa[p]=initpos[pb[p]][2];
       nextblock=(int8_t)random(0,BLOCKS);
-      moveFrames   = moveFramesTh;
+      xkeyRepeatFrames[p] = xkeyRepeatFramesTh;
+      moveWaitFrames[p] = moveWaitFramesTh;
       fixFrames[p] = fixFramesTh;
     }//isfix
   }//p
