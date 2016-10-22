@@ -211,7 +211,7 @@ void Game::loop(void){
         for(int8_t bx=0;bx<BX;bx++){
           int8_t x = (WX-1)*p + pm*(bx+px[p]);
           if(y0>=0 && y0<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
-            if(y1>=WX || map[y1][x]!=p){
+            if(y1>=WY || map[y1][x]!=p){
               //fix
               isfix[p]=true;
               my[p]=0; //cancel
@@ -224,6 +224,7 @@ void Game::loop(void){
   }
 
   //fix
+  int8_t effectedY[2][4]={{-1,-1,-1,-1},{-1,-1,-1,-1}};
   for(int8_t p=0;p<PLAYERS;p++){
     if(isfix[p]){
       //copy block -> map
@@ -233,7 +234,8 @@ void Game::loop(void){
         for(int8_t bx=0;bx<BX;bx++){
           int8_t x = (WX-1)*p + pm*(bx+px[p]);
           if(y>=0 && y<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
-            map[y][x]=(~p)&0x01;
+            map[y][x]=(~p)&0x01; // fix
+            effectedY[p][by] = y;
           }
         }//bx
       }//by
@@ -247,6 +249,38 @@ void Game::loop(void){
       fixFrames[p] = fixFramesTh;
     }//isfix
   }//p
+
+  //delete lines
+  for(int8_t p=0;p<PLAYERS;p++){
+    int8_t pm=p*-2+1;
+    for(int8_t by=0;by<BY;by++){
+      int8_t y=effectedY[p][by];
+      if(y!=-1){
+        bool isdel=true;
+        for(int8_t x=0;x<WX;x++){
+          if(map[y][x]==p){
+            isdel = false;
+            break;
+          }
+        }
+        if(isdel){
+          //delete line
+          Serial.print(p);
+          for(int8_t y1=y-pm;y1<WY&&y1>=0;y1+=-pm){
+            Serial.print(y1);
+            for(int8_t x1=0;x1<WX;x1++){
+              map[y1+pm][x1]=map[y1][x1];
+            }
+          }
+          Serial.println();
+          for(int8_t x1=0;x1<WX;x1++){
+            map[(WY-1)*p][x1]=p; // top line is empty
+          }
+        }
+      }
+    }
+  }
+
   // score
 
   // draw 
