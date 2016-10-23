@@ -45,8 +45,9 @@ class Game{
   public:
   // for arduboy
   Arduboy *pA;
-  bool *keypressed;
-  bool keypressedOld[KEYS];
+  bool *keypressedIn;
+  bool keypressed[PLAYERS][KEYS];
+  bool keypressedOld[PLAYERS][KEYS];
   Game(Arduboy *_pA, bool *_kp);
 
   //Graphic Effect
@@ -69,12 +70,22 @@ class Game{
   int8_t  py[PLAYERS]; // player y
   int8_t  pa[PLAYERS]; // player attitude
   uint8_t nextblock;   // next
-  int8_t fixFrames[2] = {0,0}; // number of frames with key down
-  int8_t fixFramesTh  =    30; // number of frames until fix with key down
-  int8_t xkeyRepeatFrames[2] = {0,0}; // number of frames with key L R
-  int8_t xkeyRepeatFramesTh  =     5; // number of frames until repeat with key L R
-  int8_t moveWaitFrames[2]   = {0,0}; // number of frames of wait for go down with key
-  int8_t moveWaitFramesTh    =     5; // number of frames of wait for go down with key
+  int8_t xkeyRepeatFrames   [2]={ 0, 0};// time with key L R
+  int8_t xkeyRepeatFramesTh [2]={ 5, 5};// time with key L R until repeat
+  int8_t moveWaitFramesLR   [2]={ 0, 0};// time with key down
+  int8_t moveWaitFramesUD   [2]={ 0, 0};// time with key down
+  int8_t moveWaitFramesAB   [2]={ 0, 0};// time with key down
+  int8_t moveWaitFramesLRTh [2]={10,10};// time with key down until repeat 
+  int8_t moveWaitFramesUDTh [2]={10,10};// time with key down until repeat 
+  int8_t moveWaitFramesABTh [2]={10,10};// time with key down until repeat 
+  int8_t gravityWaitFrames  [2]={ 0, 0};// time from last motion
+  int8_t gravityWaitFramesTh[2]={60,60};// time from last motion until next fall
+  int8_t fixDelayFrames     [2]={ 0, 0};// time from touch ground
+  int8_t fixDelayFramesTh   [2]={15,15};// time from touch ground until fix
+  int8_t spawnDelayFrames   [2]={10,10};// time from delete line
+  int8_t spawnDelayFramesTh [2]={10,10};// time from delete line until next block spawns
+  bool doesFallWithGravity [2]={false,false};
+  bool doesFallWithKey     [2]={false,false};
   void reset    (void);
   void drawAll  (void);
   void loop     (void);

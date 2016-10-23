@@ -7,7 +7,7 @@
 //--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
   state = eGAME_STT_PLAY;
-  keypressed = _kp;
+  keypressedIn = _kp;
   pA = _pA;
   geState = eGE_STT_IDLE;
   geSeqNow  =  0;
@@ -42,11 +42,14 @@ void Game::reset(void){
   py[1]=initpos[pb[1]][1];
   pa[1]=initpos[pb[1]][2];
   nextblock=(int8_t)random(0,BLOCKS);
-  xkeyRepeatFrames[0] = xkeyRepeatFramesTh;
-  fixFrames[0] = fixFramesTh;
-  fixFrames[1] = fixFramesTh;
-  moveWaitFrames[0]=moveWaitFramesTh;
-  moveWaitFrames[1]=moveWaitFramesTh;
+  for(int8_t p=0;p<PLAYERS;p++){
+    memset(&keypressed   [p][0],false,sizeof(bool)*KEYS);
+    memset(&keypressedOld[p][0],false,sizeof(bool)*KEYS);
+    xkeyRepeatFrames [p] = xkeyRepeatFramesTh [p];
+    gravityWaitFrames[p] = gravityWaitFramesTh[p];
+    fixDelayFrames   [p] = fixDelayFramesTh   [p];
+    spawnDelayFrames [p] = spawnDelayFramesTh [p];
+  }
 }
 //--------------------------------------
 void Game::drawTitle(void){
@@ -122,6 +125,7 @@ void Game::loop(void){
   }
 
   // key -> move
+  memcpy(&keypressed[0][0], keypressedIn, sizeof(bool)*KEYS);
   int8_t ma[PLAYERS];
   int8_t mx[PLAYERS];
   int8_t my[PLAYERS];
@@ -131,74 +135,117 @@ void Game::loop(void){
   ma[1]=0;
   mx[1]=0;
   my[1]=0;
-  if(keypressed[KEY_XM]){
-    if(keypressedOld[KEY_XM]){
-      //repeated
-      if(xkeyRepeatFrames[0]){
-        // not expired -> declement
-        xkeyRepeatFrames[0]--;
-      }else{
-        // expired
-        if(moveWaitFrames[0]==0){
-          mx[0]=-1;
-          moveWaitFrames[0]=moveWaitFramesTh;
-        }else{
-          moveWaitFrames[0]--;
-        }
-      }
-    }else{
-      //no repeat -> move
-      mx[0]=-1;
-      xkeyRepeatFrames[0]=xkeyRepeatFramesTh; // reset repeat
-    }
-  }
-  if(keypressed[KEY_XP]){
-    if(keypressedOld[KEY_XP]){
-      //repeated
-      if(xkeyRepeatFrames[0]){
-        // not expired -> declement
-        xkeyRepeatFrames[0]--;
-      }else{
-        // expired
-        if(moveWaitFrames[0]==0){
-          mx[0]=+1;
-          moveWaitFrames[0]=moveWaitFramesTh;
-        }else{
-          moveWaitFrames[0]--;
-        }
-      }
-    }else{
-      //no repeat -> move
-      mx[0]=+1;
-      xkeyRepeatFrames[0]=xkeyRepeatFramesTh; // reset repeat
-    }
-  }
 
-  if(keypressed[KEY_YM]){
-    if(!keypressedOld[KEY_YM] || moveWaitFrames[0]==0){
-      my[0]=-1;
-      moveWaitFrames[0]=moveWaitFramesTh;
-    }else{
-      moveWaitFrames[0]--;
+  for(int8_t p=0;p<PLAYERS;p++){
+    if(keypressed[p][KEY_XM]){
+      if(keypressedOld[p][KEY_XM]){
+        //repeated
+        if(xkeyRepeatFrames[p]){
+          // not expired -> declement
+          xkeyRepeatFrames[p]--;
+        }else{
+          // expired
+          if(moveWaitFramesLR[p]==0){
+            mx[0]=-1;
+            moveWaitFramesLR[p]=moveWaitFramesLRTh[p];
+          }else{
+            moveWaitFramesLR[p]--;
+          }
+        }
+      }else{
+        //no repeat -> move
+        mx[p]=-1;
+        xkeyRepeatFrames[p]=xkeyRepeatFramesTh[p]; // reset repeat
+      }
     }
-  }
-  if(keypressed[KEY_YP]){
-    if(!keypressedOld[KEY_YP] || moveWaitFrames[0]==0){
-      my[0]=+1;
-      moveWaitFrames[0]=moveWaitFramesTh;
-    }else{
-      moveWaitFrames[0]--;
+    if(keypressed[p][KEY_XP]){
+      if(keypressedOld[p][KEY_XP]){
+        //repeated
+        if(xkeyRepeatFrames[p]){
+          // not expired -> declement
+          xkeyRepeatFrames[p]--;
+        }else{
+          // expired
+          if(moveWaitFramesLR[p]==0){
+            mx[p]=+1;
+            moveWaitFramesLR[p]=moveWaitFramesLRTh[p];
+          }else{
+            moveWaitFramesLR[p]--;
+          }
+        }
+      }else{
+        //no repeat -> move
+        mx[p]=+1;
+        xkeyRepeatFrames[p]=xkeyRepeatFramesTh[p]; // reset repeat
+      }
     }
-  }
-  if(!keypressedOld[KEY_A] && keypressed[KEY_A]){
-    ma[0]=-1;
-  }
-  if(!keypressedOld[KEY_B] && keypressed[KEY_B]){
-    ma[0]=+1;
+    doesFallWithKey[p]=false;
+    if(keypressed[p][KEY_YM]){
+      if(!keypressedOld[p][KEY_YM] || moveWaitFramesUD[p]==0){
+        my[p]=-1;
+        moveWaitFramesUD[p]=moveWaitFramesUDTh[p];
+      }else{
+        moveWaitFramesUD[p]--;
+      }
+    }
+    if(keypressed[p][KEY_YP]){
+      if(!keypressedOld[p][KEY_YP] || moveWaitFramesUD[p]==0){
+        my[p]=+1;
+        doesFallWithKey[p]=true;
+        moveWaitFramesUD[p]=moveWaitFramesUDTh[p];
+      }else{
+        moveWaitFramesUD[p]--;
+      }
+    }
+    if(keypressed[p][KEY_A]){
+      if(!keypressedOld[p][KEY_A] || moveWaitFramesAB[p]==0){
+        ma[p]=-1;
+        moveWaitFramesAB[p]=moveWaitFramesABTh[p];
+      }else{
+        moveWaitFramesAB[p]--;
+      }
+    }
+    if(keypressed[p][KEY_B]){
+#if 0
+      Serial.print("p");
+      Serial.print(p);
+      Serial.print(":old");
+      Serial.print(keypressedOld[p][KEY_B]);
+      Serial.print(":new");
+      Serial.print(keypressed[p][KEY_B]);
+      Serial.print(":frame");
+      Serial.print(moveWaitFramesAB[p]);
+      Serial.println();
+#endif
+      if(!keypressedOld[p][KEY_B] || moveWaitFramesAB[p]==0){
+        ma[p]=+1;
+        moveWaitFramesAB[p]=moveWaitFramesABTh[p];
+      }else{
+        moveWaitFramesAB[p]--;
+      }
+    }
   }
   mx[1]=mx[0];
   my[1]=my[0];
   ma[1]=ma[0];
+
+  //fall
+  for(int8_t p=0;p<PLAYERS;p++){
+    doesFallWithGravity[p]=false;
+    if(fixDelayFrames[p]!=fixDelayFramesTh[p]){
+      //for waiting fix
+      my[p]=+1; //try fix
+    }else{
+      if(gravityWaitFrames[p]==0){
+        //expired
+        my[p]=+1; //fall
+        doesFallWithGravity[p]=true;
+        gravityWaitFrames[p]=gravityWaitFramesTh[p]; //reset
+      }else{
+        gravityWaitFrames[p]--; //dec
+      }
+    }
+  }
 
   //move x -> potision
   for(int8_t p=0;p<PLAYERS;p++){
@@ -216,14 +263,17 @@ void Game::loop(void){
           }//if (x0,y) block
         }// for bx
       }// for by
-      px[p]+=mx[p];
+      if(spawnDelayFrames[p]==spawnDelayFramesTh[p]){
+        px[p]+=mx[p];
+      }
     }
-    pa[p]=(pa[p]+ma[p]+ATTS)%ATTS;
+    if(spawnDelayFrames[p]==spawnDelayFramesTh[p]){
+      pa[p]=(pa[p]+ma[p]+ATTS)%ATTS;
+    }
   }
   // score
-
   //move y -> potision
-  bool isfix[2]={false, false};
+  bool isTouched[PLAYERS]={false,false};
   for(int8_t p=0;p<PLAYERS;p++){
     int8_t pm=p*-2+1;
     if(my[p]!=0){
@@ -234,19 +284,37 @@ void Game::loop(void){
           int8_t x = (WX-1)*p + pm*(bx+px[p]);
           if(y0>=0 && y0<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
             if(y1>=WY || map[y1][x]!=p){
-              //fix
-              isfix[p]=true;
-              my[p]=0; //cancel
-            }//if (x,y1) !map
+              //touched
+              isTouched[p]=true;
+              my[p]=0; //cancel motion
+            }else{//if touch
+              //go down
+//              fixDelayFrames[p]=fixDelayFramesTh[p]; // reset
+            }//if touch
           }//if (x,y0) block
         }// for bx
       }// for by
+    }//if my
+    if(spawnDelayFrames[p]==spawnDelayFramesTh[p]){
+      py[p]+=my[p];
     }
-    py[p]+=my[p];
-  }
+  }//p
 
-  //fix
-  int8_t effectedY[2][4]={{-1,-1,-1,-1},{-1,-1,-1,-1}};
+  //touched -> fix
+  bool isfix[PLAYERS]={false,false};
+  for(int8_t p=0;p<PLAYERS;p++){
+    if(isTouched[p]){
+      if(doesFallWithKey[p] || fixDelayFrames[p]==0){
+        //fix expired
+        isfix[p]=true;
+        fixDelayFrames[p]=fixDelayFramesTh[p]; // reset
+      }else{
+        fixDelayFrames[p]--; //dec
+      }
+    }
+  }
+  //fix -> renew map, effectedY
+  int8_t effectedY[PLAYERS][BY]={{-1,-1,-1,-1},{-1,-1,-1,-1}};
   for(int8_t p=0;p<PLAYERS;p++){
     if(isfix[p]){
       //copy block -> map
@@ -258,18 +326,10 @@ void Game::loop(void){
           if(y>=0 && y<WY && x>=0 && x<WX && block[pb[p]][pa[p]][by][bx]){
             map[y][x]=(~p)&0x01; // fix
             effectedY[p][by] = y;
+            spawnDelayFrames[p]=spawnDelayFramesTh[p]-1; //start spawn count
           }
         }//bx
       }//by
-      //reset next
-      pb[p]=nextblock;
-      px[p]=initpos[pb[p]][0];
-      py[p]=initpos[pb[p]][1];
-      pa[p]=initpos[pb[p]][2];
-      nextblock=(int8_t)random(0,BLOCKS);
-      xkeyRepeatFrames[p] = xkeyRepeatFramesTh;
-      moveWaitFrames[p] = moveWaitFramesTh;
-      fixFrames[p] = fixFramesTh;
     }//isfix
   }//p
 
@@ -288,14 +348,11 @@ void Game::loop(void){
         }
         if(isdel){
           //delete line
-          Serial.print(p);
           for(int8_t y1=y-pm;y1<WY&&y1>=0;y1+=-pm){
-            Serial.print(y1);
             for(int8_t x1=0;x1<WX;x1++){
               map[y1+pm][x1]=map[y1][x1];
             }
           }
-          Serial.println();
           for(int8_t x1=0;x1<WX;x1++){
             map[(WY-1)*p][x1]=p; // top line is empty
           }
@@ -303,6 +360,33 @@ void Game::loop(void){
       }
     }
   }
+
+  //wait new block spawn
+  for(int8_t p=0;p<PLAYERS;p++){
+    if(spawnDelayFrames[p]!=spawnDelayFramesTh[p]){
+      //is waiting
+      if(spawnDelayFrames[p]==0){
+        //expired
+        //set new block
+        pb[p]=nextblock;
+        px[p]=initpos[pb[p]][0];
+        py[p]=initpos[pb[p]][1];
+        pa[p]=initpos[pb[p]][2];
+        //set next
+        nextblock=(int8_t)random(0,BLOCKS);
+        //reset counter
+        xkeyRepeatFrames[p] = xkeyRepeatFramesTh[p];
+        moveWaitFramesLR[p] = moveWaitFramesLRTh[p];
+        moveWaitFramesUD[p] = moveWaitFramesUDTh[p];
+        moveWaitFramesAB[p] = moveWaitFramesABTh[p];
+        fixDelayFrames  [p] = fixDelayFramesTh  [p];
+        spawnDelayFrames[p] = spawnDelayFramesTh[p];
+      }else{
+        spawnDelayFrames[p]--;
+      }//is expired
+    }//is waiting
+  }//p
+
 
   // score
 
@@ -317,8 +401,9 @@ void Game::loop(void){
 //      reset();
 //    }
   }
-  memcpy(&keypressedOld[0],&keypressed[0],sizeof(bool)*KEYS);
-
+  for(int p=0;p<PLAYERS;p++){
+    memcpy(&keypressedOld[p][0],&keypressed[p][0],sizeof(bool)*KEYS);
+  }
 }
 void Game::drawAll(){
   pA->clear();
