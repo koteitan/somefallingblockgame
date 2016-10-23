@@ -12,9 +12,9 @@
 #define SX   (128) // pixel per a screen
 #define SY   ( 64) // pixel per a screen
 #define WX   ( 10) // blocks per a world
-#define WY   ( 14) // blocks per a world
-#define CX   (  4) // pixel per a cell
-#define CY   (  4) // pixel per a cell
+#define WY   ( 18) // blocks per a world
+#define CX   (  3) // pixel per a cell
+#define CY   (  3) // pixel per a cell
 // for block
 #define BLOCKS (7) // types of blocks
 #define ATTS   (4) // types of attitude of a block (0, 90, 180, -90)
@@ -69,7 +69,7 @@ class Game{
   int8_t  px[PLAYERS]; // player x
   int8_t  py[PLAYERS]; // player y
   int8_t  pa[PLAYERS]; // player attitude
-  uint8_t nextblock;   // next
+  uint8_t nextblock[PLAYERS];   // next
   int8_t xkeyRepeatFrames   [2]={ 0, 0};// time with key L R
   int8_t xkeyRepeatFramesTh [2]={ 5, 5};// time with key L R until repeat
   int8_t moveWaitFramesLR   [2]={ 0, 0};// time with key down

@@ -41,7 +41,8 @@ void Game::reset(void){
   px[1]=initpos[pb[1]][0];
   py[1]=initpos[pb[1]][1];
   pa[1]=initpos[pb[1]][2];
-  nextblock=(int8_t)random(0,BLOCKS);
+  nextblock[0]=(int8_t)random(0,BLOCKS);
+  nextblock[1]=(int8_t)random(0,BLOCKS);
   for(int8_t p=0;p<PLAYERS;p++){
     memset(&keypressed   [p][0],false,sizeof(bool)*KEYS);
     memset(&keypressedOld[p][0],false,sizeof(bool)*KEYS);
@@ -390,12 +391,12 @@ void Game::loop(void){
       if(spawnDelayFrames[p]==0){
         //expired
         //set new block
-        pb[p]=nextblock;
+        pb[p]=nextblock[p];
         px[p]=initpos[pb[p]][0];
         py[p]=initpos[pb[p]][1];
         pa[p]=initpos[pb[p]][2];
         //set next
-        nextblock=(int8_t)random(0,BLOCKS);
+        nextblock[p]=(int8_t)random(0,BLOCKS);
         //reset counter
         xkeyRepeatFrames[p] = xkeyRepeatFramesTh[p];
         moveWaitFramesLR[p] = moveWaitFramesLRTh[p];
@@ -430,8 +431,8 @@ void Game::loop(void){
 void Game::drawAll(){
   pA->clear();
   if(state==eGAME_STT_PLAY){
-    int wx0=24;
-    int wy0= 4;
+    int wx0=32;
+    int wy0=SY/2-WY/2*CY;
     //map ---------------
     //  horizontal line
     for(int y=0;y<WY-1;y++){
@@ -449,6 +450,39 @@ void Game::drawAll(){
         }
       }
     }
+    //next-------------
+    for(int p=0;p<PLAYERS;p++){
+      int8_t pm = 1-p*2;
+      int8_t b=nextblock[p];
+      int8_t nx0=SX/2+WX/2*CX;
+      int8_t ny0=SY/2-BY/2*CY-BY*CY*pm;
+      for(int8_t by=0;by<=BY;by++){
+        for(int8_t bx=0;bx<=BX;bx++){
+          char h  = (bx==BX||by==BY)?0:block[b][0][by  ][bx  ];
+          char hx = (bx== 0||by==BY)?0:block[b][0][by  ][bx-1];
+          char hy = (bx==BX||by== 0)?0:block[b][0][by-1][bx  ];
+          //vertical line
+          int8_t x = bx;
+          int8_t y = by;
+          if(h^hx){
+            pA->drawLine(
+              nx0+CX*x+ 0,
+              ny0+CY*y+ 0,
+              nx0+CX*x+ 0,
+              ny0+CY*y+CY,1);
+          }
+          //horizontal line
+          if(h^hy){
+            pA->drawLine(
+              nx0+CX*x+ 0,
+              ny0+CY*y+ 0,
+              nx0+CX*x+CX,
+              ny0+CY*y+ 0,1);
+          }
+        }// for bx
+      }// for by
+    }//for p
+     
     //block-------------
     for(int p=0;p<PLAYERS;p++){
       int8_t b=pb[p];
@@ -503,6 +537,7 @@ void Game::drawAll(){
     }//for p
     //border ---------------
     pA->drawRect(wx0,wy0,CX*WX+1,CY*WY+1,1);
+//    pA->drawRect(0,0,SX-1,SY-1,1);
     //display ---------------
     pA->display();
   }//  if(state==eGAME_STT_PLAY)

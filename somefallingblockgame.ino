@@ -19,7 +19,7 @@ void setup(){
   pA->initRandomSeed();
   pGame = new Game(pA, keypressed);
   pA->setFrameRate(frame_rate);
-  Serial.begin(9600);
+//  Serial.begin(9600);
 }
 
 long msnow=0;
