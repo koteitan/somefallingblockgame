@@ -18,11 +18,8 @@
 
 Under construction
 * Key:
- * UDLR ... 
- * B    ... 
- * A    ... 
-* Youtube Play
-  * Under construction
+ * DLR ... motion
+ * AB  ... lotation
 
 #How to load
 
@@ -35,7 +32,7 @@ Under construction
  * Tool > Serial Port = the port of Arduboy Leonardo
 * Get the sketch
  * git clone xttps://github.com/koteitan/somefallingblockgame.git or https://github.com/koteitan/somefallingblockgame/archive/master.zip
-* change the directory name to "somefallingblockgame/".
+* open "somefallingblockgame/somefallingblockgame.ino" with Arduino IDE.
 * Connect USB cable between your pc and Arduboy.
 * Press upload button.
 
@@ -61,11 +58,8 @@ Under construction
 遊び方  
 ---------------------------
 - キー:
-  - UDLR ... 
-  - B    ... 
-  - A    ... 
-- Youtube プレイ動画
-  - Under construction
+ * DLR ... motion
+ * AB  ... lotation
 ---------------------------
 ロードの仕方
 ---------------------------
@@ -80,7 +74,7 @@ Under construction
   - git clone https://github.com/koteitan/somefallingblockgame.git
     または
   - https://github.com/koteitan/somefallingblockgame/archive/master.zip
-- ディレクトリ名を "planetshooter/" に変えて下さい。
+- "somefallingblockgame/somefallingblockgame.ino" を Arduino IDE で開いてください。
 - Arduboy を USB ケーブル で PC につないで下さい。
 - 「マイコンボードに書き込む」ボタンを押して下さい。
 ---------------------------
