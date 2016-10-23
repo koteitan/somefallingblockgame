@@ -267,11 +267,33 @@ void Game::loop(void){
         px[p]+=mx[p];
       }
     }
-    if(spawnDelayFrames[p]==spawnDelayFramesTh[p]){
-      pa[p]=(pa[p]+ma[p]+ATTS)%ATTS;
+  }
+  //rotate
+  for(int8_t p=0;p<PLAYERS;p++){
+    if(ma[p]!=0){
+      int8_t pm=p*-2+1;
+      int8_t a0 = pa[p];
+      int8_t a1 = (pa[p]+ma[p]+ATTS)%ATTS;
+      for(int8_t by=0;by<BY;by++){
+        int8_t y = (WY-1)*p + pm*(by+py[p]);
+        for(int8_t bx=0;bx<BX;bx++){
+          int8_t x = (WX-1)*p + pm*(bx+px[p]);
+          if(block[pb[p]][a1][by][bx]){
+            bool bcoll=false;
+            if(y>=0 && y<WY && x>=0 && x<WX && map[y][x]!=p) bcoll=true;
+            if((p==0 && y>=WY) || (p==1 && y<0) || x>=WX || x<0) bcoll=true;
+            if(bcoll){ // collision
+              a1=a0; // cancel
+            }
+          }
+        }
+      }
+      if(spawnDelayFrames[p]==spawnDelayFramesTh[p]){
+        pa[p]=a1;
+      }
     }
   }
-  // score
+
   //move y -> potision
   bool isTouched[PLAYERS]={false,false};
   for(int8_t p=0;p<PLAYERS;p++){
