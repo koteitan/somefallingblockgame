@@ -71,12 +71,12 @@ class Game{
   int8_t  pa[PLAYERS]; // player attitude
   uint8_t nextblock[PLAYERS];   // next
   int8_t xkeyRepeatFrames   [2]={ 0, 0};// time with key L R
-  int8_t xkeyRepeatFramesTh [2]={ 5, 5};// time with key L R until repeat
+  int8_t xkeyRepeatFramesTh [2]={ 4, 4};// time with key L R until repeat
   int8_t moveWaitFramesLR   [2]={ 0, 0};// time with key down
   int8_t moveWaitFramesUD   [2]={ 0, 0};// time with key down
   int8_t moveWaitFramesAB   [2]={ 0, 0};// time with key down
-  int8_t moveWaitFramesLRTh [2]={10,10};// time with key down until repeat 
-  int8_t moveWaitFramesUDTh [2]={10,10};// time with key down until repeat 
+  int8_t moveWaitFramesLRTh [2]={ 2, 2};// time with key down until repeat 
+  int8_t moveWaitFramesUDTh [2]={ 3, 3};// time with key down until repeat 
   int8_t moveWaitFramesABTh [2]={10,10};// time with key down until repeat 
   int8_t gravityWaitFrames  [2]={ 0, 0};// time from last motion
   int8_t gravityWaitFramesTh[2]={60,60};// time from last motion until next fall
