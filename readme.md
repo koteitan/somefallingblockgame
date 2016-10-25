@@ -1,6 +1,6 @@
 #some falling block puzzle game
 
-![playing movie](http://www.ukaibutton.com/somefallingblockgame/play.mp4)
+![playing movie](play.gif)
 
 * English
  * How to Play
