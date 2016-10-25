@@ -1,6 +1,7 @@
 #some falling block puzzle game
 
-![screen shot](/ss.jpg)
+<blockquote class="twitter-video" data-lang="ja"><p lang="en" dir="ltr">new battle puzzle game <a href="https://t.co/HBXH8tctTU">https://t.co/HBXH8tctTU</a> <a href="https://twitter.com/hashtag/arduboy?src=hash">#arduboy</a> <a href="https://t.co/M0kxiKm50T">pic.twitter.com/M0kxiKm50T</a></p>&mdash; koteitan (@koteitan) <a href="https://twitter.com/koteitan/status/790198647682052096">2016年10月23日</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 * English
  * How to Play
